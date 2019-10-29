@@ -83,8 +83,10 @@ while True:
     if new_hash_of_preceding_coin != hash_of_preceding_coin:
         hash_of_preceding_coin = new_hash_of_preceding_coin
         print("Head changed: %s" % hash_of_preceding_coin)
+        with open("prev_hash", "w") as prev_hash_file:
+            prev_hash_file.write(hash_of_preceding_coin)
         terminate_workers()
         create_workers()
 
-    # wait 10 seconds
-    time.sleep(10)
+    # wait 30 seconds
+    time.sleep(30)
