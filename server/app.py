@@ -34,4 +34,4 @@ class ID(Resource):
       
 api.add_resource(ID, "/id/<int:desired>")
 
-app.run(debug=True)
+app.run(host="0.0.0.0")
