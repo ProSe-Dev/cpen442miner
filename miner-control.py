@@ -1,4 +1,5 @@
 import argparse
+import random
 import requests
 import os 
 import time
@@ -11,7 +12,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 parser = argparse.ArgumentParser(description='Let us do some mining')
 parser.add_argument("--numWorkers", type=int, default=3, help="The private password")
 parser.add_argument("mineCmd", default="go_miner.exe", help="Miner binary")
-parser.add_argument("--offset", type=int, default=7729510772, help="Space between workers")
+parser.add_argument("--offset", type=int, default=random.randrange(7729510772,15459021544,1), help="Space between workers")
 args = parser.parse_args()
 
 with open("prev_hash", "rb") as prev_hash_file:
