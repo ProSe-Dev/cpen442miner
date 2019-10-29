@@ -96,7 +96,10 @@ def terminate_workers():
         if pidid in d:
             pid = d[pidid]
             if pid != -1:
-                os.kill(pid, signal.SIGINT)
+                try:
+                    os.kill(pid, signal.SIGINT)
+                except:
+                    pass # this will die if we found a coin blob
                 d[pidid] = - 1
     jobs.clear()
 
