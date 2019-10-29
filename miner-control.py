@@ -46,7 +46,7 @@ def f(event, i):
     """
     cmd = args.mineCmd.split(" ")
     cmd.append(str(i*args.offset))
-    coin_blob = check_output(cmd)
+    coin_blob = check_output(cmd).strip()
     print("COIN BLOB: %s" % coin_blob)
     resp = claim_coin_blob(coin_blob)
     if resp.status_code == 200:
