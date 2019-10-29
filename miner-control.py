@@ -60,7 +60,7 @@ def f(event, i):
     cmd = args.mineCmd.split(" ")
     # probably won't be mining with more than 10 workers
     cmd.append(str(myId*args.offset*10 + i*args.offset))
-    coin_blob = check_output(cmd).strip()
+    coin_blob = check_output(cmd).strip().decode('utf-8')
     print("COIN BLOB: %s" % coin_blob)
     resp = claim_coin_blob(coin_blob)
     if resp.status_code == 200:
