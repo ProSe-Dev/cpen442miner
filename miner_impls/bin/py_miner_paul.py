@@ -10,10 +10,10 @@ parser.add_argument("offset", type=int, default=7729510772, help="Space between 
 args = parser.parse_args()
 
 with open("public_id", "r") as f:
-    id_of_miner = f.read()
+    id_of_miner = f.read().encode()
 
 with open("prev_hash", "r") as f:
-    hash_of_preceding_coin = f.read()
+    hash_of_preceding_coin = f.read().encode()
 
 def num_to_bytes(n):
     """
