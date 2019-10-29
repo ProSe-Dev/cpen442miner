@@ -83,6 +83,7 @@ def create_workers():
             args=(event, i, d,))
         p.start()
         jobs.append(p)
+        print('created worker with PID:', p.pid)
 
 def terminate_workers():
     """
@@ -118,6 +119,10 @@ while True:
         with open("prev_hash", "wb") as prev_hash_file:
             prev_hash_file.write(hash_of_preceding_coin)
         terminate_workers()
+        create_workers()
+    elif not jobs:
+        # reploy workers initally so we don't have to wait for next block
+        print("Initalizing with head: %s" % hash_of_preceding_coin)
         create_workers()
 
     # wait 30 seconds
