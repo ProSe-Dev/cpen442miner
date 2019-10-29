@@ -4,8 +4,9 @@ import requests
 import os 
 import time
 
-from subprocess import check_output
-from multiprocessing import Event, Process
+import signal
+import subprocess
+from multiprocessing import Event, Process, Manager
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -20,7 +21,8 @@ with open("prev_hash", "rb") as prev_hash_file:
     hash_of_preceding_coin = prev_hash_file.read()
 jobs = []
 event = Event() # event for found desired hash
-
+manager = Manager()
+d = manager.dict()
 
 def get_or_update_id(desired):
     resp = requests.get(args.idServer+"/id/%d" % desired)
@@ -53,14 +55,17 @@ def claim_coin_blob(coin_blob):
     print("Submitting: %s" % data)
     return requests.post("http://cpen442coin.ece.ubc.ca/claim_coin", json=data)
 
-def f(event, i):
+def f(event, i, d):
     """
     Helper for mining in a pool
     """
     cmd = args.mineCmd.split(" ")
     # probably won't be mining with more than 10 workers
     cmd.append(str(myId*args.offset*10 + i*args.offset))
-    coin_blob = check_output(cmd).strip().decode('utf-8')
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    d['pid%d' % i] = proc.pid
+    (output, error) = proc.communicate()
+    coin_blob = output.strip().decode('utf-8')
     print("COIN BLOB: %s" % coin_blob)
     resp = claim_coin_blob(coin_blob)
     if resp.status_code == 200:
@@ -75,7 +80,7 @@ def create_workers():
     for i in range(args.numWorkers):
         p = Process(
             target=f,
-            args=(event, i,))
+            args=(event, i, d,))
         p.start()
         jobs.append(p)
 
@@ -84,8 +89,15 @@ def terminate_workers():
     Helper for terminating workers
     """
     print("Terminating workers")
-    for p in jobs:
+    print(d)
+    for i, p in enumerate(jobs):
         p.terminate()
+        pidid = "pid%d" % i
+        if pidid in d:
+            pid = d[pidid]
+            if pid != -1:
+                os.kill(pid, signal.SIGINT)
+                d[pidid] = - 1
     jobs.clear()
 
 while True:
