@@ -16,11 +16,11 @@ func main() {
 	flag.Parse()
 	offset, _ := strconv.ParseInt(flag.Args()[0], 10, 64)
 	preamble := []byte("CPEN 442 Coin2019")
-	hash_of_preceding, err := ioutil.ReadFile("test_prev_hash") // b has type []byte
+	hash_of_preceding, err := ioutil.ReadFile("prev_hash") // b has type []byte
 	if err != nil {
 		log.Fatal(err)
 	}
-	id_of_miner, err := ioutil.ReadFile("test_public_id") // b has type []byte
+	id_of_miner, err := ioutil.ReadFile("public_id") // b has type []byte
 	if err != nil {
 		log.Fatal(err)
 	}
