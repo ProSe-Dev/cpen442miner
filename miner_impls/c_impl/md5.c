@@ -1,87 +1,94 @@
-#include <openssl/md5.h>
-#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-// rip TODO
+#include <openssl/md5.h>
 
-typedef unsigned char BYTE;
+unsigned char result[MD5_DIGEST_LENGTH];
 
-void string2ByteArray(char* input, BYTE* output)
-{
-    int loop;
+char* get_md5_sum(unsigned char* md, char *buf) {
     int i;
-    
-    loop = 0;
-    i = 0;
-    
-    while(input[loop] != '\0')
+    char* buf2 = buf;
+    char* endofbuf = buf + sizeof(buf);
+    for (i = 0; i < x; i++)
     {
-        output[i++] = input[loop++];
+        /* i use 5 here since we are going to add at most 
+        3 chars, need a space for the end '\n' and need
+        a null terminator */
+        if (buf + 5 < endofbuf)
+        {
+            if (i > 0)
+            {
+                buf += sprintf(buf, ":");
+            }
+            buf += sprintf(buf, "%02X", md[i]);
+        }
     }
+    buf += sprintf(buf, "\n");
 }
 
-char* concat(char* a, size_t a_size,
-             char* b, size_t b_size) {
-    char* c = realloc(a, a_size + b_size);
-    memcpy(c + a_size, b,  b_size);  // dest is after "a" data, source is b with b_size
-    free(b);
-    return c;
+// Get the size of the file by its file descriptor
+unsigned long get_size_by_fd(int fd) {
+    struct stat statbuf;
+    if(fstat(fd, &statbuf) < 0) exit(-1);
+    return statbuf.st_size;
 }
 
-int main()
+bool startsWith(const char *pre, const char *str)
 {
-    int n;
-    MD5_CTX c;
-    unsigned char out[MD5_DIGEST_LENGTH];
-    char preamble[] = "CPEN 442 Coin2019"
+    size_t lenpre = strlen(pre),
+           lenstr = strlen(str);
+    return lenstr < lenpre ? false : memcmp(pre, str, lenpre) == 0;
+}
 
-    int len = strlen(preamble);
-    BYTE buf[len];
+int main(int argc, char *argv[]) {
+    int file_descript;
+    unsigned long id_file_size;
+    unsigned long prev_hash_file_size;
+    char* id_buffer;
+    char* prev_hash_buffer;
+    unsigned long offset;
+    unsigned char* result;
+    unsigned char* hexresult;
+    char* full_buffer;
 
-    string2ByteArray(preamble, arr);
-
-    FILE *fileptr;
-    char *id_buffer;
-    long filelen;
-
-    fileptr = fopen("public_id", "rb");  // Open the file in binary mode
-    fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
-    filelen = ftell(fileptr);             // Get the current byte offset in the file
-    rewind(fileptr);                      // Jump back to the beginning of the file
-
-    id_buffer = (char *)malloc((filelen+1)*sizeof(char)); // Enough memory for file + \0
-    fread(id_buffer, filelen, 1, fileptr); // Read in the entire file
-    fclose(fileptr); // Close the file
-
-    char *prev_hash_buffer;
-
-    fileptr = fopen("prev_hash", "rb");  // Open the file in binary mode
-    fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
-    filelen = ftell(fileptr);             // Get the current byte offset in the file
-    rewind(fileptr);                      // Jump back to the beginning of the file
-
-    prev_hash_buffer = (char *)malloc((filelen+1)*sizeof(char)); // Enough memory for file + \0
-    fread(prev_hash_buffer, filelen, 1, fileptr); // Read in the entire file
-    fclose(fileptr); // Close the file
-
-    
-
-    MD5_Init(&c);
-
-    bytes = 
-
-    while(bytes > 0)
-    {
-        MD5_Update(&c, buf, bytes);
-        bytes=read(STDIN_FILENO, buf, 512);
+    if(argc != 2) { 
+        exit(-1);
     }
 
-    MD5_Final(out, &c);
+    char *p;
+    long coin_blob_counter = strtol(argv[1], &p, 10);
 
-    for(n=0; n<MD5_DIGEST_LENGTH; n++)
-        printf("%02x", out[n]);
-    printf("\n");
+    file_descript = open("public_id", O_RDONLY);
+    if(file_descript < 0) exit(-1);
 
-    return(0);        
+    id_file_size = get_size_by_fd(file_descript);
+    id_buffer = mmap(0, file_size, PROT_READ, MAP_SHARED, file_descript, 0);
+
+    file_descript = open("prev_hash", O_RDONLY);
+    if(file_descript < 0) exit(-1);
+
+    prev_hash_file_size = get_size_by_fd(file_descript);
+    prev_hash_buffer = mmap(0, file_size, PROT_READ, MAP_SHARED, file_descript, 0);
+
+    full_buffer = malloc((id_file_size + prev_hash_file_size) * sizeof(char));
+
+    while (true) {
+        MD5((unsigned char*) file_buffer, file_size, result);
+        get_md5_sum(result, hexresult);
+        if (startsWith("00000000", hexresult)) {
+            printf(hexresult)
+            return 0;
+        }
+        coin_blob_counter++;
+    }
+
+    munmap(prev_hash_buffer, prev_hash_file_size);
+    munmap(id_buffer, id_file_size); 
+
+    return 0;
 }
