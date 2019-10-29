@@ -14,7 +14,8 @@ parser.add_argument("mineCmd", default="go_miner.exe", help="Miner binary")
 parser.add_argument("--offset", type=int, default=7729510772, help="Space between workers")
 args = parser.parse_args()
 
-hash_of_preceding_coin = "2e3a8e88a060cedcd9ac7b74fadd58e0"
+with open("prev_hash", "rb") as prev_hash_file:
+    hash_of_preceding_coin = prev_hash_file.read()
 jobs = []
 event = Event() # event for found desired hash
 
@@ -26,7 +27,7 @@ def get_last_coin():
     """
     Ping the server to get the last coin ID
     """
-    resp = requests.get("http://cpen442coin.ece.ubc.ca/last_coin")
+    resp = requests.post("http://cpen442coin.ece.ubc.ca/last_coin")
     if resp.status_code != 200 or "coin_id" not in resp.json():
         raise Exception("Couldn't get last coin")
     return resp.json()["coin_id"].encode()
@@ -46,7 +47,7 @@ def f(event, i):
     cmd = args.mineCmd.split(" ")
     cmd.append(str(i*args.offset))
     coin_blob = check_output(cmd)
-    print(coin_blob)
+    print("COIN BLOB: %s" % coin_blob)
     resp = claim_coin_blob(coin_blob)
     if resp.status_code == 200:
         print("Yay, found a coin!!")
@@ -83,7 +84,7 @@ while True:
     if new_hash_of_preceding_coin != hash_of_preceding_coin:
         hash_of_preceding_coin = new_hash_of_preceding_coin
         print("Head changed: %s" % hash_of_preceding_coin)
-        with open("prev_hash", "w") as prev_hash_file:
+        with open("prev_hash", "wb") as prev_hash_file:
             prev_hash_file.write(hash_of_preceding_coin)
         terminate_workers()
         create_workers()

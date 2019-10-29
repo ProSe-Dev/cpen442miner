@@ -8,7 +8,7 @@ import time
 parser = argparse.ArgumentParser(description='Let us do some mining')
 parser.add_argument("--id_of_miner")
 parser.add_argument("--prev_hash")
-parser.add_argument("--offset", type=int, default=7729510772, help="Space between workers")
+parser.add_argument("offset", type=int, default=7729510772, help="Space between workers")
 args = parser.parse_args()
 
 with open("public_id", "r") as f:
@@ -32,6 +32,7 @@ def mine_coin(hash_of_preceding_coin, id_of_miner, offset=0):
     """
     coin_blob_ctr = offset
     while True:
+        print("hehe")
         m = hashlib.md5()
         m.update(b"CPEN 442 Coin2019")
         m.update(hash_of_preceding_coin)
@@ -40,6 +41,7 @@ def mine_coin(hash_of_preceding_coin, id_of_miner, offset=0):
         m.update(id_of_miner)
         cpen442coin = m.hexdigest()
         if cpen442coin.startswith("00000000"):
+            print("@@@@" + cpen442coin)
             return cpen442coin, coin_blob_ctr, coin_blob, str(base64.b64encode(coin_blob), "utf-8")
         coin_blob_ctr += 1
 
