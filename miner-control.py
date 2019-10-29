@@ -75,7 +75,7 @@ def create_workers():
     for i in range(args.numWorkers):
         p = Process(
             target=f,
-            args=(event, i+1,))
+            args=(event, i,))
         p.start()
         jobs.append(p)
 
