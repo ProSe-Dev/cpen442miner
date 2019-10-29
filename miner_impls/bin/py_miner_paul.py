@@ -41,6 +41,5 @@ def mine_coin(hash_of_preceding_coin, id_of_miner, offset=0):
             return cpen442coin, coin_blob_ctr, coin_blob, str(base64.b64encode(coin_blob), "utf-8")
         coin_blob_ctr += 1
 
-def mine(hash_of_preceding_coin, id_of_miner, offset=0):
-    cpen442coin, mined_coin_blob_ctr, _, mined_coin_blob_b64 = mine_coin(hash_of_preceding_coin, id_of_miner, offset)
-    return mined_coin_blob_b64
+cpen442coin, mined_coin_blob_ctr, _, mined_coin_blob_b64 = mine_coin(hash_of_preceding_coin, id_of_miner, args.offset)
+print(mined_coin_blob_b64)
