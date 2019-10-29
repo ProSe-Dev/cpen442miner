@@ -6,7 +6,7 @@ parser.add_argument("privatePassword", help="The private password")
 
 args = parser.parse_args()
 
-m = hashlib.sha256()
+m = hashlib.md5()
 m.update(args.privatePassword.encode())
 print(m.hexdigest())
 

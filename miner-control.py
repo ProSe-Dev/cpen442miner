@@ -1,22 +1,26 @@
 import argparse
 import requests
+import os 
 import time
 
 from subprocess import check_output
 from multiprocessing import Event, Process
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
 parser = argparse.ArgumentParser(description='Let us do some mining')
 parser.add_argument("--numWorkers", type=int, default=3, help="The private password")
-parser.add_argument("miner", default="go_miner.exe", help="Miner binary")
+parser.add_argument("mineCmd", default="go_miner.exe", help="Miner binary")
 parser.add_argument("--offset", type=int, default=7729510772, help="Space between workers")
 args = parser.parse_args()
 
-hash_of_preceding_coin = b"2e3a8e88a060cedcd9ac7b74fadd58e0"
+hash_of_preceding_coin = "2e3a8e88a060cedcd9ac7b74fadd58e0"
 jobs = []
 event = Event() # event for found desired hash
 
-with open("public_id", "r") as f:
-    id_of_miner = f.read()
+with open("public_id", "r") as public_id_file:
+    id_of_miner = public_id_file.read()
+    print("Mining using public ID: %s" % id_of_miner)
 
 def get_last_coin():
     """
@@ -32,23 +36,28 @@ def claim_coin_blob(coin_blob):
         "coin_blob": coin_blob,
         "id_of_miner": id_of_miner, 
     }
+    print("Submitting: %s" % data)
     return requests.post("http://cpen442coin.ece.ubc.ca/claim_coin", json=data)
 
 def f(event, i):
     """
     Helper for mining in a pool
     """
-    coin_blob = subprocess.check_output([args.miner])
-    claim_coin_blob(coin_blob)
+    cmd = args.mineCmd.split(" ")
+    cmd.append(str(i*args.offset))
+    coin_blob = check_output(cmd)
+    print(coin_blob)
+    resp = claim_coin_blob(coin_blob)
+    if resp.status_code == 200:
+        print("Yay, found a coin!!")
     event.set()
-    print("event set")
 
-def create_workers(miner_id):
+def create_workers():
     """
     Helper for creating workers
     """
     print("Creating workers")
-    for i in range(num_workers):
+    for i in range(args.numWorkers):
         p = Process(
             target=f,
             args=(event, i,))
@@ -69,20 +78,13 @@ while True:
     # workers
     if event.is_set():
         terminate_workers()
-        print("Quitting")
-        break
-    # this section is for if we want to get a valid coin
-    # for fun; ping the last coin endpoint once every
-    # minute and if the hash has changed then we restart
-    # the workers
+
     new_hash_of_preceding_coin = get_last_coin()
     if new_hash_of_preceding_coin != hash_of_preceding_coin:
         hash_of_preceding_coin = new_hash_of_preceding_coin
         print("Head changed: %s" % hash_of_preceding_coin)
-        with open("prev_hash", "w") as f:
-            f.write(hash_of_preceding_coin)
         terminate_workers()
-        create_workers(miner_id)
+        create_workers()
 
-    # wait 60 seconds
-    time.sleep(60)
+    # wait 10 seconds
+    time.sleep(10)
