@@ -12,13 +12,25 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 parser = argparse.ArgumentParser(description='Let us do some mining')
 parser.add_argument("--numWorkers", type=int, default=3, help="The private password")
 parser.add_argument("mineCmd", default="go_miner.exe", help="Miner binary")
-parser.add_argument("--offset", type=int, default=random.randrange(7729510772,15459021544,1), help="Space between workers")
+parser.add_argument("--offset", type=int, default=15459021544, help="Space between workers")
+parser.add_argument("--idServer", help="Set an ID server to ping")
 args = parser.parse_args()
 
 with open("prev_hash", "rb") as prev_hash_file:
     hash_of_preceding_coin = prev_hash_file.read()
 jobs = []
 event = Event() # event for found desired hash
+
+
+def get_or_update_id(desired):
+    resp = requests.get(args.idServer+"/id/%d" % desired)
+    return int(resp.content)
+
+if args.idServer is None:
+    myId = 0
+else:
+    myId = get_or_update_id(0)
+    print("Got ID: %d" % myId)
 
 with open("public_id", "r") as public_id_file:
     id_of_miner = public_id_file.read()
@@ -46,7 +58,8 @@ def f(event, i):
     Helper for mining in a pool
     """
     cmd = args.mineCmd.split(" ")
-    cmd.append(str(i*args.offset))
+    # probably won't be mining with more than 10 workers
+    cmd.append(str(myId*args.offset*10 + i*args.offset))
     coin_blob = check_output(cmd).strip()
     print("COIN BLOB: %s" % coin_blob)
     resp = claim_coin_blob(coin_blob)
@@ -82,6 +95,8 @@ while True:
         terminate_workers()
 
     new_hash_of_preceding_coin = get_last_coin()
+    if args.idServer is not None:
+        get_or_update_id(myId)
     if new_hash_of_preceding_coin != hash_of_preceding_coin:
         hash_of_preceding_coin = new_hash_of_preceding_coin
         print("Head changed: %s" % hash_of_preceding_coin)
