@@ -60,8 +60,8 @@ def f(event, i, d):
     Helper for mining in a pool
     """
     cmd = args.mineCmd.split(" ")
-    # probably won't be mining with more than 10 workers
-    cmd.append(str(myId*args.offset*10 + i*args.offset))
+    # probably won't be mining with more than 15 workers
+    cmd.append(str(myId*args.offset*15 + i*args.offset))
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     d['pid%d' % i] = proc.pid
     (output, error) = proc.communicate()
