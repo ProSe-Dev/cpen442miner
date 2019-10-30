@@ -2,7 +2,7 @@ import time
 
 from subprocess import check_output
 
-run_args = [("go", "../miner_impls/bin/go_impl"), ("python", "python3 ../miner_impls/bin/py_miner_paul.py")]
+run_args = [("c", "../miner_impls/bin/c_impl"), ("go", "../miner_impls/bin/go_impl"), ("python", "python3 ../miner_impls/bin/py_miner_paul.py")]
 
 with open("expected_offset", "r") as f:
     offset = int(f.read())
