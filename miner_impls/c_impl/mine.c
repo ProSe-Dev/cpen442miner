@@ -93,7 +93,6 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    char *p;
     sscanf(argv[1], "%lu", &coin_blob_counter);
     char* preamble = "CPEN 442 Coin2019";
     unsigned long preamble_size = strlen(preamble);
