@@ -125,5 +125,6 @@ while True:
         print("Initalizing with head: %s" % hash_of_preceding_coin)
         create_workers()
 
-    # wait 30 seconds
-    time.sleep(30)
+    # wait 13 seconds
+    # TODO: update the hashes in central server for even faster updates?
+    time.sleep(13)
