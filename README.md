@@ -1,7 +1,9 @@
-top secret stuffs
+## top secret stuffs
 
-nohup ./exec.sh <workers optional> &
+### run
 
-for no log file (if you plan on running for a long time)
-nohup ./exec.sh <workers optional> >/dev/null 2>&1 &
+nohup ./exec.sh [workers optional] &
+
+### for no log file (if you plan on running for a long time)
+nohup ./exec.sh [workers optional] >/dev/null 2>&1 &
 
