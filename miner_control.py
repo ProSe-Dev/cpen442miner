@@ -104,27 +104,31 @@ def terminate_workers():
                 d[pidid] = - 1
     jobs.clear()
 
-while True:
-    # if we found something, we can terminate all the
-    # workers
-    if event.is_set():
-        terminate_workers()
+def exec():
+    while True:
+        # if we found something, we can terminate all the
+        # workers
+        if event.is_set():
+            terminate_workers()
 
-    new_hash_of_preceding_coin = get_last_coin()
-    if args.idServer is not None:
-        get_or_update_id(myId)
-    if new_hash_of_preceding_coin != hash_of_preceding_coin:
-        hash_of_preceding_coin = new_hash_of_preceding_coin
-        print("Head changed: %s" % hash_of_preceding_coin)
-        with open("prev_hash", "wb") as prev_hash_file:
-            prev_hash_file.write(hash_of_preceding_coin)
-        terminate_workers()
-        create_workers()
-    elif not jobs:
-        # reploy workers initally so we don't have to wait for next block
-        print("Initalizing with head: %s" % hash_of_preceding_coin)
-        create_workers()
+        new_hash_of_preceding_coin = get_last_coin()
+        if args.idServer is not None:
+            get_or_update_id(myId)
+        if new_hash_of_preceding_coin != hash_of_preceding_coin:
+            hash_of_preceding_coin = new_hash_of_preceding_coin
+            print("Head changed: %s" % hash_of_preceding_coin)
+            with open("prev_hash", "wb") as prev_hash_file:
+                prev_hash_file.write(hash_of_preceding_coin)
+            terminate_workers()
+            create_workers()
+        elif not jobs:
+            # reploy workers initally so we don't have to wait for next block
+            print("Initalizing with head: %s" % hash_of_preceding_coin)
+            create_workers()
 
-    # wait 13 seconds
-    # TODO: update the hashes in central server for even faster updates?
-    time.sleep(13)
+        # wait 13 seconds
+        # TODO: update the hashes in central server for even faster updates?
+        time.sleep(13)
+
+if __name__ == "__main__":
+    exec()
